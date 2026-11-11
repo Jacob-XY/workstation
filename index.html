@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GMCC Welling 印度区域销售管理工作台</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Microsoft YaHei', 'PingFang SC', Arial, sans-serif; background: #f0f2f5; color: #333; }
+        
+        .header { background: linear-gradient(135deg, #1a5276, #2e86c1); color: white; padding: 20px 30px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+        .header h1 { font-size: 22px; font-weight: 600; }
+        .header .subtitle { font-size: 13px; opacity: 0.85; margin-top: 4px; }
+        .header .date { font-size: 13px; opacity: 0.8; }
+        
+        .nav-tabs { background: white; display: flex; border-bottom: 2px solid #e8e8e8; padding: 0 20px; overflow-x: auto; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+        .nav-tab { padding: 14px 22px; cursor: pointer; font-size: 14px; color: #666; border-bottom: 3px solid transparent; white-space: nowrap; transition: all 0.2s; }
+        .nav-tab:hover { color: #2e86c1; background: #f5f9fc; }
+        .nav-tab.active { color: #2e86c1; border-bottom-color: #2e86c1; font-weight: 600; }
+        
+        .content { padding: 24px; max-width: 1400px; margin: 0 auto; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        .card { background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+        .card-title { font-size: 16px; font-weight: 600; color: #1a5276; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 2px solid #e8e8e8; }
+        
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px; }
+        .metric-card { background: linear-gradient(135deg, #f5f9fc, #e8f4fd); border-radius: 8px; padding: 18px; border-left: 4px solid #2e86c1; }
+        .metric-card.green { border-left-color: #27ae60; background: linear-gradient(135deg, #f0faf4, #e0f5e9); }
+        .metric-card.orange { border-left-color: #e67e22; background: linear-gradient(135deg, #fef8f0, #fdebd0); }
+        .metric-card.purple { border-left-color: #8e44ad; background: linear-gradient(135deg, #f8f0fc, #f0e0f7); }
+        .metric-label { font-size: 12px; color: #888; margin-bottom: 6px; }
+        .metric-value { font-size: 24px; font-weight: 700; color: #333; }
+        .metric-unit { font-size: 12px; color: #888; margin-left: 4px; }
+        .metric-change { font-size: 11px; margin-top: 4px; }
+        .metric-change.up { color: #27ae60; }
+        .metric-change.down { color: #e74c3c; }
+        
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: #2e86c1; color: white; padding: 10px 12px; text-align: left; font-weight: 500; }
+        td { padding: 10px 12px; border-bottom: 1px solid #eee; }
+        tr:hover td { background: #f5f9fc; }
+        tr:nth-child(even) td { background: #fafbfc; }
+        tr:nth-child(even):hover td { background: #f0f5fa; }
+        
+        .badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 500; }
+        .badge-green { background: #e0f5e9; color: #27ae60; }
+        .badge-blue { background: #e0f0ff; color: #2e86c1; }
+        .badge-orange { background: #fdebd0; color: #e67e22; }
+        .badge-red { background: #fde0e0; color: #e74c3c; }
+        .badge-gray { background: #eee; color: #888; }
+        
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .info-item { display: flex; align-items: center; padding: 8px 0; }
+        .info-label { font-size: 13px; color: #888; min-width: 100px; }
+        .info-value { font-size: 14px; color: #333; font-weight: 500; }
+        
+        .btn { padding: 8px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; transition: all 0.2s; }
+        .btn-primary { background: #2e86c1; color: white; }
+        .btn-primary:hover { background: #1a5276; }
+        .btn-success { background: #27ae60; color: white; }
+        .btn-warning { background: #e67e22; color: white; }
+        
+        .section-divider { height: 2px; background: #e8e8e8; margin: 20px 0; }
+        
+        .editable { border: 1px dashed #ccc; padding: 4px 8px; min-height: 28px; border-radius: 3px; cursor: text; }
+        .editable:focus { outline: none; border-color: #2e86c1; background: #f5f9fc; }
+        .editable:hover { border-color: #2e86c1; }
+        
+        .quick-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+        .quick-action { background: white; border: 1px solid #e8e8e8; border-radius: 8px; padding: 16px 20px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 10px; }
+        .quick-action:hover { border-color: #2e86c1; box-shadow: 0 2px 8px rgba(46,134,193,0.15); transform: translateY(-1px); }
+        .quick-action .icon { font-size: 24px; }
+        .quick-action .text { font-size: 13px; color: #333; }
+        
+        @media (max-width: 768px) {
+            .info-grid { grid-template-columns: 1fr; }
+            .metrics-grid { grid-template-columns: 1fr 1fr; }
+            .content { padding: 12px; }
+        }
+        
+        .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+        .status-dot.green { background: #27ae60; }
+        .status-dot.orange { background: #e67e22; }
+        .status-dot.red { background: #e74c3c; }
+        
+        .progress-bar { height: 8px; background: #eee; border-radius: 4px; overflow: hidden; margin-top: 6px; }
+        .progress-fill { height: 100%; border-radius: 4px; transition: width 0.3s; }
+        .progress-fill.blue { background: #2e86c1; }
+        .progress-fill.green { background: #27ae60; }
+        .progress-fill.orange { background: #e67e22; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div>
+        <h1>GMCC Welling 印度区域销售管理工作台</h1>
+        <div class="subtitle">冰箱压缩机 & 洗衣机电机 | 印度市场</div>
+    </div>
+    <div class="date" id="currentDate"></div>
+</div>
+
+<div class="nav-tabs">
+    <div class="nav-tab active" onclick="switchTab('dashboard')">📊 仪表板</div>
+    <div class="nav-tab" onclick="switchTab('customers')">👥 客户管理</div>
+    <div class="nav-tab" onclick="switchTab('sales')">📈 销售数据</div>
+    <div class="nav-tab" onclick="switchTab('team')">👤 团队管理</div>
+    <div class="nav-tab" onclick="switchTab('meetings')">📋 会议记录</div>
+    <div class="nav-tab" onclick="switchTab('travel')">✈️ 出差计划</div>
+    <div class="nav-tab" onclick="switchTab('products')">📦 产品目录</div>
+    <div class="nav-tab" onclick="switchTab('plan')">🎯 年度计划</div>
+</div>
+
+<div class="content">
+
+<!-- ═══ Dashboard ═══ -->
+<div class="tab-content active" id="tab-dashboard">
+    <div class="quick-actions">
+        <div class="quick-action" onclick="switchTab('customers')">
+            <span class="icon">👥</span>
+            <span class="text">客户管理</span>
+        </div>
+        <div class="quick-action" onclick="switchTab('sales')">
+            <span class="icon">📈</span>
+            <span class="text">销售数据</span>
+        </div>
+        <div class="quick-action" onclick="switchTab('meetings')">
+            <span class="icon">📋</span>
+            <span class="text">会议记录</span>
+        </div>
+        <div class="quick-action" onclick="switchTab('travel')">
+            <span class="icon">✈️</span>
+            <span class="text">出差计划</span>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">📌 个人信息</div>
+        <div class="info-grid">
+            <div class="info-item"><span class="info-label">姓名：</span><span class="info-value editable" contenteditable="true">点击填写</span></div>
+            <div class="info-item"><span class="info-label">职位：</span><span class="info-value">印度区域销售经理</span></div>
+            <div class="info-item"><span class="info-label">所属公司：</span><span class="info-value">GMCC Welling</span></div>
+            <div class="info-item"><span class="info-label">负责区域：</span><span class="info-value">印度</span></div>
+            <div class="info-item"><span class="info-label">产品线：</span><span class="info-value">冰箱压缩机 / 洗衣机电机</span></div>
+            <div class="info-item"><span class="info-label">团队规模：</span><span class="info-value editable" contenteditable="true">___人</span></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">📊 关键指标概览 - 本月</div>
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-label">冰箱压缩机销量</div>
+                <div class="metric-value editable" contenteditable="true">--<span class="metric-unit">台</span></div>
+                <div class="metric-change up">↑ --% 环比</div>
+            </div>
+            <div class="metric-card green">
+                <div class="metric-label">洗衣机电机销量</div>
+                <div class="metric-value editable" contenteditable="true">--<span class="metric-unit">台</span></div>
+                <div class="metric-change up">↑ --% 环比</div>
+            </div>
+            <div class="metric-card orange">
+                <div class="metric-label">总销售额</div>
+                <div class="metric-value editable" contenteditable="true">--<span class="metric-unit">万美元</span></div>
+                <div class="metric-change up">↑ --% 环比</div>
+            </div>
+            <div class="metric-card purple">
+                <div class="metric-label">新客户开发</div>
+                <div class="metric-value editable" contenteditable="true">--<span class="metric-unit">个</span></div>
+                <div class="metric-change">--</div>
+            </div>
+        </div>
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-label">客户拜访</div>
+                <div class="metric-value editable" contenteditable="true">--<span class="metric-unit">次</span></div>
+            </div>
+            <div class="metric-card green">
+                <div class="metric-label">订单交付率</div>
+                <div class="metric-value editable" contenteditable="true">--<span class="metric-unit">%</span></div>
+                <div class="progress-bar"><div class="progress-fill blue" style="width: 0%"></div></div>
+            </div>
+            <div class="metric-card orange">
+                <div class="metric-label">回款率</div>
+                <div class="metric-value editable" contenteditable="true">--<span class="metric-unit">%</span></div>
+                <div class="progress-bar"><div class="progress-fill green" style="width: 0%"></div></div>
+            </div>
+            <div class="metric-card purple">
+                <div class="metric-label">年度目标完成率</div>
+                <div class="metric-value editable" contenteditable="true">--<span class="metric-unit">%</span></div>
+                <div class="progress-bar"><div class="progress-fill orange" style="width: 0%"></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ Customers ═══ -->
+<div class="tab-content" id="tab-customers">
+    <div class="card">
+        <div class="card-title">👥 客户管理台账</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>序号</th><th>客户名称</th><th>客户类型</th><th>产品线</th>
+                    <th>联系人</th><th>电话/邮箱</th><th>城市</th><th>合作状态</th>
+                    <th>年度目标<br>(万美元)</th><th>已下单<br>(万美元)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>1</td><td contenteditable="true">Whirlpool India</td><td><span class="badge badge-red">战略客户</span></td><td contenteditable="true">冰箱压缩机</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td><span class="status-dot green"></span>合作中</td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+                <tr><td>2</td><td contenteditable="true">Samsung India</td><td><span class="badge badge-red">战略客户</span></td><td contenteditable="true">冰箱压缩机/洗衣机电机</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td><span class="status-dot green"></span>合作中</td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+                <tr><td>3</td><td contenteditable="true">LG Electronics India</td><td><span class="badge badge-red">战略客户</span></td><td contenteditable="true">冰箱压缩机</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td><span class="status-dot green"></span>合作中</td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+                <tr><td>4</td><td contenteditable="true">Haier India</td><td><span class="badge badge-orange">重点客户</span></td><td contenteditable="true">冰箱压缩机/洗衣机电机</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td><span class="status-dot green"></span>合作中</td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+                <tr><td>5</td><td contenteditable="true">Godrej Appliances</td><td><span class="badge badge-orange">重点客户</span></td><td contenteditable="true">冰箱压缩机</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td><span class="status-dot green"></span>合作中</td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+                <tr><td>6</td><td contenteditable="true">Voltas</td><td><span class="badge badge-orange">重点客户</span></td><td contenteditable="true">冰箱压缩机</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td><span class="status-dot green"></span>合作中</td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+                <tr><td>7</td><td contenteditable="true">Blue Star</td><td><span class="badge badge-blue">一般客户</span></td><td contenteditable="true">冰箱压缩机</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td><span class="status-dot green"></span>合作中</td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+                <tr><td>8</td><td contenteditable="true">IFB Industries</td><td><span class="badge badge-blue">一般客户</span></td><td contenteditable="true">洗衣机电机</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td><span class="status-dot green"></span>合作中</td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+                <tr><td>9</td><td contenteditable="true"></td><td></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+                <tr><td>10</td><td contenteditable="true"></td><td></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ═══ Sales ═══ -->
+<div class="tab-content" id="tab-sales">
+    <div class="card">
+        <div class="card-title">🧊 冰箱压缩机 - 月度销售跟踪</div>
+        <table>
+            <thead>
+                <tr><th>指标</th><th>1月</th><th>2月</th><th>3月</th><th>4月</th><th>5月</th><th>6月</th><th>7月</th><th>8月</th><th>9月</th><th>10月</th><th>11月</th><th>12月</th><th>合计</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>销量(台)</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td></td></tr>
+                <tr><td>销售额(万美元)</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td></td></tr>
+                <tr><td>新客户数</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td></td></tr>
+                <tr><td>订单数</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td></td></tr>
+                <tr><td>回款(万美元)</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td></td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="card">
+        <div class="card-title">👕 洗衣机电机 - 月度销售跟踪</div>
+        <table>
+            <thead>
+                <tr><th>指标</th><th>1月</th><th>2月</th><th>3月</th><th>4月</th><th>5月</th><th>6月</th><th>7月</th><th>8月</th><th>9月</th><th>10月</th><th>11月</th><th>12月</th><th>合计</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>销量(台)</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td></td></tr>
+                <tr><td>销售额(万美元)</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td></td></tr>
+                <tr><td>新客户数</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td></td></tr>
+                <tr><td>订单数</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td></td></tr>
+                <tr><td>回款(万美元)</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td></td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ═══ Team ═══ -->
+<div class="tab-content" id="tab-team">
+    <div class="card">
+        <div class="card-title">👤 团队成员</div>
+        <table>
+            <thead>
+                <tr><th>序号</th><th>姓名</th><th>职位</th><th>负责区域/客户</th><th>产品线</th><th>联系电话</th><th>本月目标<br>(万美元)</th><th>本月完成<br>(万美元)</th><th>完成率</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>1</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+                <tr><td>2</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+                <tr><td>3</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+                <tr><td>4</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+                <tr><td>5</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="card">
+        <div class="card-title">📋 任务分配与跟踪</div>
+        <table>
+            <thead>
+                <tr><th>序号</th><th>任务描述</th><th>负责人</th><th>优先级</th><th>截止日期</th><th>状态</th><th>备注</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>1</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"><span class="badge badge-red">高</span></td><td contenteditable="true"></td><td contenteditable="true"><span class="badge badge-gray">待开始</span></td><td contenteditable="true"></td></tr>
+                <tr><td>2</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"><span class="badge badge-orange">中</span></td><td contenteditable="true"></td><td contenteditable="true"><span class="badge badge-gray">待开始</span></td><td contenteditable="true"></td></tr>
+                <tr><td>3</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"><span class="badge badge-blue">低</span></td><td contenteditable="true"></td><td contenteditable="true"><span class="badge badge-gray">待开始</span></td><td contenteditable="true"></td></tr>
+                <tr><td>4</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+                <tr><td>5</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ═══ Meetings ═══ -->
+<div class="tab-content" id="tab-meetings">
+    <div class="card">
+        <div class="card-title">📋 会议记录与复盘</div>
+        <table>
+            <thead>
+                <tr><th>序号</th><th>会议日期</th><th>会议类型</th><th>参会人员</th><th>主要议题</th><th>关键决议</th><th>待办事项</th><th>复盘日期</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>1</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+                <tr><td>2</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+                <tr><td>3</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+                <tr><td>4</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+                <tr><td>5</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ═══ Travel ═══ -->
+<div class="tab-content" id="tab-travel">
+    <div class="card">
+        <div class="card-title">✈️ 出差计划与客户拜访</div>
+        <table>
+            <thead>
+                <tr><th>序号</th><th>日期</th><th>城市</th><th>客户名称</th><th>拜访目的</th><th>参会人员</th><th>交通/住宿</th><th>预算(卢比)</th><th>状态</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>1</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"><span class="badge badge-gray">计划中</span></td></tr>
+                <tr><td>2</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"><span class="badge badge-gray">计划中</span></td></tr>
+                <tr><td>3</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"><span class="badge badge-gray">计划中</span></td></tr>
+                <tr><td>4</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"><span class="badge badge-gray">计划中</span></td></tr>
+                <tr><td>5</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"><span class="badge badge-gray">计划中</span></td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ═══ Products ═══ -->
+<div class="tab-content" id="tab-products">
+    <div class="card">
+        <div class="card-title">🧊 冰箱压缩机产品</div>
+        <table>
+            <thead>
+                <tr><th>序号</th><th>产品型号</th><th>产品类型</th><th>制冷剂</th><th>容量(cc)</th><th>应用范围</th><th>能效等级</th><th>电压/频率</th><th>主要客户</th><th>单价(USD)</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>1</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+                <tr><td>2</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+                <tr><td>3</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+                <tr><td>4</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+                <tr><td>5</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="card">
+        <div class="card-title">👕 洗衣机电机产品</div>
+        <table>
+            <thead>
+                <tr><th>序号</th><th>产品型号</th><th>电机类型</th><th>功率(W)</th><th>转速(RPM)</th><th>应用范围</th><th>能效等级</th><th>电压/频率</th><th>主要客户</th><th>单价(USD)</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>1</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+                <tr><td>2</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+                <tr><td>3</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+                <tr><td>4</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+                <tr><td>5</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ═══ Annual Plan ═══ -->
+<div class="tab-content" id="tab-plan">
+    <div class="card">
+        <div class="card-title">🎯 年度销售计划</div>
+        <table>
+            <thead>
+                <tr><th>产品线</th><th>年度目标<br>(万美元)</th><th>Q1目标</th><th>Q2目标</th><th>Q3目标</th><th>Q4目标</th><th>重点客户</th><th>策略</th><th>风险</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>冰箱压缩机-旋转式</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+                <tr><td>冰箱压缩机-活塞式</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+                <tr><td>洗衣机电机-BLDC</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+                <tr><td>洗衣机电机-DD</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+                <tr><td>洗衣机电机-感应电机</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+                <tr style="font-weight:bold; background:#f0f5fa"><td>合计</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td></td><td></td><td></td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</div>
+
+<script>
+function switchTab(tabName) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+    document.getElementById('tab-' + tabName).classList.add('active');
+    const tabs = document.querySelectorAll('.nav-tab');
+    const tabMap = ['dashboard','customers','sales','team','meetings','travel','products','plan'];
+    const idx = tabMap.indexOf(tabName);
+    if (idx >= 0 && tabs[idx]) tabs[idx].classList.add('active');
+}
+
+// Set current date
+const now = new Date();
+const dateStr = now.getFullYear() + '年' + (now.getMonth()+1) + '月' + now.getDate() + '日';
+const weekdays = ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
+document.getElementById('currentDate').textContent = dateStr + ' ' + weekdays[now.getDay()];
+</script>
+
+</body>
+</html>
